@@ -1,4 +1,4 @@
-///
+/////
 enum DiceColor: Int {
 
     case RED = 0, YELLOW, GREEN, Err
