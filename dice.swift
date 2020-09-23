@@ -180,33 +180,269 @@ class Player
 
 class Game {
    var players: [Player] = []
+   var numOfPlayers: Int?
+   var hasWinner: Bool = false
 
-   func startGame() {
-
+   init()
+   {
+     numOfPlayers = 0
    }
+   
+   func startGame() {
+      print("==================")
+      print("Welcome to Zombie Dice - a game made for brave and risky people. This game can be played by 2 to 8 players. Please let us know how many are the players?")
+
+      self.numOfPlayers = Int(readLine()!)
+      while self.numOfPlayers! < 2 || self.numOfPlayers! > 8
+      {
+        print("Type a number between 2 and 8")
+        self.numOfPlayers = Int(readLine()!)
+      }
+
+      var i = 0
+      for i in 0...self.numOfPlayers! - 1 {
+        print("Enter a name for player ", i+1)
+        let name = readLine()
+        self.players.insert(Player(name: name!), at:i)
+      }
+  }
 
    func playAgain()
    {
+     print("==================")
+     print("Starting a new game with the same players...")
+     var i = 0
+     for i in 0...self.numOfPlayers! - 1 {
+        self.players.insert(Player(name: players[i].name), at:i)
+     }
+     play()
+   }
+
+   func rollAgain(i:Int) {
+      players[i].rollAllDices()
+      print("Result after second roll:\n")
+      printDiceRes(i: i)
 
    }
 
-   func rollAgain() {
+   func endTurn(i: Int) {
 
+      if players[i].resultAfterRoll.0 == .Point
+      {
+        players[i].points += 1
+      }
+
+      if players[i].resultAfterRoll.1 == .Point
+      {
+        players[i].points += 1
+      }
+
+      if players[i].resultAfterRoll.2 == .Point
+      {
+        players[i].points += 1
+      }
+
+      if players[i].points >= 13
+      {
+        endOfGame(i:i)
+      }
    }
 
-   func endTurn() {
+   func endOfGame(i: Int) {
+     print("==================")
 
-   }
+     hasWinner = true
+     print("We have a winner! Congrats to ", players[i].name)
+     print("==================")
 
-   func endOfGame() {
-
-   }
-
-   func addPlayer()
-   {
+     print("Type in \"new game\" to start a new game with new settings")
+     print("Type in \"play again\" to start new game with the old settings")
      
+
+     var command = readLine();
+    
+     if command == "play again" {
+       hasWinner = false
+       playAgain()
+     } else if command == "new game" {
+       hasWinner = false
+       startGame()
+       play()
+     }
    }
+
+   func play()
+   {
+
+     while !hasWinner {
+       for i in 0...self.numOfPlayers! - 1 {
+        print("==================")
+
+        printScores()
+        print("it's player's ", players[i].name, " turn")
+
+        print("==================")
+
+        printDiceColors(player:players[i])
+        players[i].rollAllDices()
+        printDiceRes(i: i)
+
+        print("==================")
+
+        if players[i].resultAfterRoll.0 == .Weapon && players[i].resultAfterRoll.1 == .Weapon && players[i].resultAfterRoll.2 == .Weapon {
+          print("Bad luck - 3 shotguns, you lose your turn.")
+          endTurn(i: i) 
+          continue
+        }
+        print("If you want to end your turn here please type \"end turn\". ")
+        print("If you have a dice with second roll option please type \"roll i\", where i is the periodic number of the dice")
+        print("If you want roll all your dices again type \"roll again\". ")
+
+        var command = readLine();
+        
+        
+        while command != "end turn" {
+          if command == "roll again" {
+            rollAgain(i:i)
+            printDiceRes(i: i)
+            if players[i].resultAfterRoll.0 == .Weapon && players[i].resultAfterRoll.1 == .Weapon && players[i].resultAfterRoll.2 == .Weapon {
+              endTurn(i: i) 
+              continue
+              }
+          } else if command == "roll 1" {
+            players[i].rollAgainOneDice(num:1)
+            printDiceRes(i: i)
+            if players[i].resultAfterRoll.0 == .Weapon && players[i].resultAfterRoll.1 == .Weapon && players[i].resultAfterRoll.2 == .Weapon {
+                endTurn(i: i) 
+                continue
+                }
+          } else if command == "roll 2" {
+            players[i].rollAgainOneDice(num:2)
+            printDiceRes(i: i)
+            if players[i].resultAfterRoll.0 == .Weapon && players[i].resultAfterRoll.1 == .Weapon && players[i].resultAfterRoll.2 == .Weapon {
+              endTurn(i: i) 
+              continue
+            }
+
+          } else if command == "roll 3" {
+            players[i].rollAgainOneDice(num:3)
+            printDiceRes(i: i)
+            if players[i].resultAfterRoll.0 == .Weapon && players[i].resultAfterRoll.1 == .Weapon && players[i].resultAfterRoll.2 == .Weapon {
+                endTurn(i: i) 
+                continue
+            }
+          }
+
+          command = readLine();
+        }
+
+        endTurn(i: i) 
+
+      }
+     }
+
+   }
+
+
+   func printScores() {
+      var str:String=""
+      for i in 0...self.numOfPlayers! - 1 {
+          str += "| "
+          str += String(players[i].points)
+          str += " "
+      }
+      str += "|"
+
+      print(str)
+   }
+
+   func printDiceColors(player: Player)
+   {
+      var str:String=""
+      str += "| "
+      switch player.firstDice.color{
+        case .RED: 
+            str += "red"
+        case .GREEN:
+            str += "green"
+        case .YELLOW:
+            str += "yellow"
+        default:
+            str += ""
+      }
+      str += " | "
+
+      switch player.secondDice.color{
+        case .RED: 
+            str += "red"
+        case .GREEN:
+            str += "green"
+        case .YELLOW:
+            str += "yellow"
+        default:
+            str += ""
+      }
+      str += " | "
+
+      switch player.thirdDice.color{
+        case .RED: 
+            str += "red"
+        case .GREEN:
+            str += "green"
+        case .YELLOW:
+            str += "yellow"
+        default:
+            str += ""
+      }
+      str += " |"
+
+      print(str)
+   }
+
+func printDiceRes(i: Int)
+   {
+      var str:String=""
+      str += "( "
+      switch players[i].resultAfterRoll.0{
+        case .Point: 
+            str += "point, "
+        case .Weapon:
+            str += "weapon, "
+        case .SecondThrow:
+            str += "secondRoll, "
+        default:
+            str += ""
+      }
+
+      switch players[i].resultAfterRoll.1{
+        case .Point: 
+            str += "point, "
+        case .Weapon:
+            str += "weapon, "
+        case .SecondThrow:
+            str += "secondRoll, "
+        default:
+            str += ""
+      }
+
+      switch players[i].resultAfterRoll.2{
+        case .Point: 
+            str += "point"
+        case .Weapon:
+            str += "weapon"
+        case .SecondThrow:
+            str += "secondRoll"
+        default:
+            str += ""
+      }
+
+      str += " )"
+
+      print(str)
+   }
+
 }
 
-let p = Player(name: "bogi")
-p.rollAllDices()
+let p = Game()
+p.startGame()
+p.play()
