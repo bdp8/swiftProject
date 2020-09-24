@@ -1,15 +1,18 @@
-/////
+/* типовете зарове */
 enum DiceColor: Int {
 
     case RED = 0, YELLOW, GREEN, Err
 } 
 
+/* типовете резулат*/
 enum DiceResult: Int {
   case Point = 0, SecondThrow, Weapon, Error
 }
 
-  var arrayOfDices: [Int] = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]
+/* Това са всички зарове, преди да се изтеглят се разбъркват всеки път*/
+var arrayOfDices: [Int] = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]
 
+/* За всеки зар имаме неговият тип, колко от страните му носят точка, повторно хвърляне или бомба*/
 class Dice {
     var color: DiceColor
     var countPoints: Int
@@ -17,6 +20,8 @@ class Dice {
     var countSecondThrow: Int
 
     var arrayOfEvents: [Int] = []
+    
+    /* Създаваме зар, като обозначим неговия тип/цвят */
     init(clr: DiceColor )
     {
         self.color = clr
@@ -38,6 +43,7 @@ class Dice {
         
       }
 
+    /* Правим масива на състоянията */
     func makeArray() {
      
         var i = 0
@@ -60,7 +66,9 @@ class Dice {
         self.arrayOfEvents = self.arrayOfEvents.shuffled()
     }
 
+    /* Хвърляме 1 зар и ни се връща резултатът от вхърлянето */
     func rollDice() -> DiceResult {
+        
         if self.arrayOfEvents.count <= 0 
         { 
            return DiceResult.Error
@@ -82,6 +90,7 @@ class Dice {
     }
 }
 
+/* Класът играч има име на играч, брой натрупани точки, 3 изтеглени зара и резултатът от тяхното хвърляне */
 class Player
 {
 
@@ -92,6 +101,7 @@ class Player
   var thirdDice : Dice
   var resultAfterRoll: (DiceResult,DiceResult,DiceResult)
 
+  /* Обектите от клас Player се инициализират с име на играч */
   init (name : String) 
   {
     self.name = name
@@ -177,7 +187,7 @@ class Player
 
 }
 
-
+/* Тук имаме масив с всички играчи, брой играчи и булева променлива, която да ни оповести за победителя */
 class Game {
    var players: [Player] = []
    var numOfPlayers: Int?
@@ -188,6 +198,7 @@ class Game {
      numOfPlayers = 0
    }
    
+   /* тази функция стартира играта, очаква въвеждане на брой играчи и техните имена */ 
    func startGame() {
       print("==================")
       print("Welcome to Zombie Dice - a game made for brave and risky people. This game can be played by 2 to 8 players. Please let us know how many are the players?")
@@ -205,8 +216,9 @@ class Game {
         let name = readLine()
         self.players.insert(Player(name: name!), at:i)
       }
-  }
+   }
 
+   /* стартира нова игра със същите настройки и играчи */ 
    func playAgain()
    {
      print("==================")
@@ -218,6 +230,7 @@ class Game {
      play()
    }
 
+   /* Дава право на играча да хвърли наново заровете си */ 
    func rollAgain(i:Int) {
       players[i].rollAllDices()
       print("Result after second roll:\n")
@@ -225,6 +238,7 @@ class Game {
 
    }
 
+   /* Край на ход на играч, добавят му се точките, ако има такива спечелени */ 
    func endTurn(i: Int) {
 
       if players[i].resultAfterRoll.0 == .Point
@@ -248,6 +262,7 @@ class Game {
       }
    }
 
+   /* Има победител, дава право на избор между изцяло нова игра или отново същата */ 
    func endOfGame(i: Int) {
      print("==================")
 
@@ -271,6 +286,7 @@ class Game {
      }
    }
 
+   /* Тук протича реално цялата игра */ 
    func play()
    {
 
@@ -336,14 +352,72 @@ class Game {
           command = readLine();
         }
 
+        pickNewDices(i:i)
         endTurn(i: i) 
 
       }
      }
 
    }
+    
+   /* избираме нови зарове за всеки нов ход на играч */ 
+   func pickNewDices(i:Int)
+   {
+      arrayOfDices = arrayOfDices.shuffled()
 
+      var pickedIndex1 = Int.random(in: 0..<arrayOfDices.count)
+      var pickedIndex2: Int 
+      var pickedIndex3: Int
 
+      repeat {
+        pickedIndex2 = Int.random(in: 0..<arrayOfDices.count)
+      }
+      while pickedIndex2 == pickedIndex1 
+
+      repeat {
+        pickedIndex3 = Int.random(in: 0..<arrayOfDices.count)
+      }
+      while pickedIndex3 == pickedIndex1 || pickedIndex2 == pickedIndex3 
+
+      let num1 = arrayOfDices[pickedIndex1]
+      switch num1 {
+        case 0: 
+        players[i].firstDice = Dice(clr: .RED)
+        case 1: 
+        players[i].firstDice = Dice(clr: .YELLOW)
+        case 2: 
+        players[i].firstDice = Dice(clr: .GREEN)
+        default:
+        players[i].firstDice = Dice(clr: .Err)
+      }
+   
+    let num2 = arrayOfDices[pickedIndex2]
+    switch num2 {
+      case 0: 
+      players[i].secondDice = Dice(clr: .RED)
+      case 1: 
+      players[i].secondDice = Dice(clr: .YELLOW)
+      case 2: 
+      players[i].secondDice = Dice(clr: .GREEN)
+      default:
+      players[i].secondDice = Dice(clr: .Err)
+    }
+
+    let num3 = arrayOfDices[pickedIndex3]
+    switch num3 {
+      case 0: 
+      players[i].thirdDice = Dice(clr: .RED)
+      case 1: 
+      players[i].thirdDice = Dice(clr: .YELLOW)
+      case 2: 
+      players[i].thirdDice = Dice(clr: .GREEN)
+      default:
+      players[i].thirdDice = Dice(clr: .Err)
+    }
+
+   }
+    
+    
    func printScores() {
       var str:String=""
       for i in 0...self.numOfPlayers! - 1 {
@@ -399,7 +473,7 @@ class Game {
       print(str)
    }
 
-func printDiceRes(i: Int)
+   func printDiceRes(i: Int)
    {
       var str:String=""
       str += "( "
